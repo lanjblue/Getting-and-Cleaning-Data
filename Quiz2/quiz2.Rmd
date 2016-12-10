@@ -65,7 +65,7 @@ Question 2
 > Which of the following commands will select only the data for the probability weights that are formatted like pwgtp1, pwgtp2, pwgtp3, etc. for the people with ages less than 50?
 
 ```{r}
-options(gsubfn.engine = "R")
+options(gsubfn.engine = "R") 
 library(sqldf)
 library(data.table)
 
