@@ -1,0 +1,130 @@
+Week 2 Quiz
+===========
+
+Load packages.
+
+```{r}
+packages <- c("data.table", "sqldf")
+
+options(gsubfn.engine = "R")
+library(sqldf)
+sapply(packages, require, character.only=TRUE, quietly=TRUE)
+```
+
+
+Question 1
+----------
+
+> Register an application with the Github API here https://github.com/settings/applications. Access the API to get information on your instructors repositories (hint: this is the url you want "https://api.github.com/users/jtleek/repos"). Use this data to find the time that the datasharing repo was created. What time was it created? This tutorial may be useful (https://github.com/hadley/httr/blob/master/demo/oauth2-github.r). You may also need to run the code in the base R package and not R studio.
+
+**Run this code chunk interactively**
+
+```{r, eval=FALSE}
+library(httr)
+require(httpuv)
+require(jsonlite)
+
+# 1. Find OAuth settings for github:
+#    http://developer.github.com/v3/oauth/
+oauth_endpoints("github")
+
+# 2. Register an application at https://github.com/settings/applications
+#    Insert your values below - if secret is omitted, it will look it up in
+#    the GITHUB_CONSUMER_SECRET environmental variable.
+#
+#    Use http://localhost:1410 as the callback url
+myapp <- oauth_app("quiz2", "ddb0d599de51ccd02f4b", secret="6af1109f6ecf442d292425087d49bb13d9bbe9c8")
+
+# 3. Get OAuth credentials (prompt webpage to authenticate)
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+
+# 4. Use API
+req <- GET("https://api.github.com/users/jtleek/repos", config(token = github_token))
+stop_for_status(req)
+output <- content(req)
+
+## find created date for datasharing repo
+i<-1
+while(i<30){
+  if(output[[i]]$name=="datasharing"){break}
+  i=i+1
+}
+list(output[[i]]$name, output[[i]]$created_at)
+```
+
+
+Question 2
+----------
+
+> The sqldf package allows for execution of SQL commands on R data frames. We will use the sqldf package to practice the queries we might send with the dbSendQuery command in RMySQL. Download the American Community Survey data and load it into an R object called
+> 
+> `acs`
+> 
+> https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv 
+> 
+> Which of the following commands will select only the data for the probability weights that are formatted like pwgtp1, pwgtp2, pwgtp3, etc. for the people with ages less than 50?
+
+```{r}
+options(gsubfn.engine = "R")
+library(sqldf)
+library(data.table)
+
+url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv"
+desfile <- "ss06pid.csv"
+download.file(url, desfile)
+acs <- data.table(read.csv(desfile))
+query <-sqldf("select pwgtp1 from acs where AGEP < 50")
+
+```
+
+Question 3
+----------
+
+> Using the same data frame you created in the previous problem, what is the equivalent function to unique(acs$AGEP)
+
+```{r}
+u <- unique(acs$AGEP)
+query <- sqldf("select distinct AGEP from acs")
+
+identical(u, query$AGEP)
+```
+
+
+Question 4
+----------
+
+> How many characters are in the 10th, 20th, 30th and 100th lines of HTML from this page: 
+> 
+> http://biostat.jhsph.edu/~jleek/contact.html 
+> 
+> (Hint: the nchar() function in R may be helpful)
+
+```{r}
+connection <- url("http://biostat.jhsph.edu/~jleek/contact.html")
+htmlCode <- readLines(connection)
+close(connection)
+length(htmlCode)
+c(nchar(htmlCode[10]), nchar(htmlCode[20]), nchar(htmlCode[30]), nchar(htmlCode[100]))
+```
+
+Question 5
+----------
+
+> Read this data set into R and report the sum of the numbers in the fourth column. 
+> 
+> https://d396qusza40orc.cloudfront.net/getdata%2Fwksst8110.for 
+> 
+> Original source of the data: http://www.cpc.ncep.noaa.gov/data/indices/wksst8110.for 
+> 
+> (Hint this is a fixed width file format)
+
+```{r}
+url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fwksst8110.for"
+lines <- readLines(url, n=10)
+w <- c(1,9,9,4,9,4,9,4,9,4) 
+colnames <- c("V1","Date","sstNino12","sstaNino12","sstNino3","sstaNino3",
+              "sstNino34","sstaNino34","sstNino4","sstaNino4")
+d <- read.fwf(url, w, header=FALSE, skip=4, col.names=colnames)
+d <- d[,-1]
+sum(d[, 4])
+```
