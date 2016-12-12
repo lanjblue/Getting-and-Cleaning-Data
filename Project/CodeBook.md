@@ -27,7 +27,7 @@ For each record it is provided:
 
 ### 1. Merge the training and the test sets to create one data set.
 
-load and merge the follwing data files into one data set:
+Load and merge the follwing data files into one data set:
 
 * features.txt
 * activity_labels.txt
