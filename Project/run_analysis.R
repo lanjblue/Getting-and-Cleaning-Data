@@ -5,9 +5,7 @@
 # analysis. 
 
 #install.packages("data.table","reshape2","dplyr")
-library(data.table)
-library(reshape2)
-library(dplyr)
+library(data.table, reshape2, dplyr)
 
 # Download & Unzip the data
 
@@ -15,7 +13,9 @@ url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR
 
 temp <- tempfile()
 download.file(url, dest=temp, mode="wb") 
-unzip (temp, exdir = "./")
+if (!file.exists("UCI HAR Dataset")){
+  unzip (temp, exdir = "./")
+}
 unlink(temp)
 
 path <- getwd()
@@ -82,7 +82,6 @@ setkey(dt, subject, activityindex, activityname)
 
 # 4. Appropriately labels the data set with descriptive variable names.
 
-  
 ### Reshape dataset from wide to long table 
 dtLong <- melt(dt,id.vars=c("subject", "activityindex", "activityname"))
 names(dtLong)[4] <- "featurecode"
@@ -96,3 +95,4 @@ dtLong = dtLong %>% select(subject, activityindex, activityname, featurenum, fea
 # with the average of each variable for each activity and each subject.
 
 tidy <- summarize(group_by(dtLong,subject,activityname,featurename), mean=mean(value))
+write.table(tidy,"tidy.txt",quote=FALSE)
