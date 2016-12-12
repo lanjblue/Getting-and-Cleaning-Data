@@ -95,4 +95,4 @@ dtLong = dtLong %>% select(subject, activityindex, activityname, featurenum, fea
 # with the average of each variable for each activity and each subject.
 
 tidy <- summarize(group_by(dtLong,subject,activityname,featurename), mean=mean(value))
-write.table(tidy,"tidy.txt",quote=FALSE)
+write.table(tidy,"tidy.txt",quote=FALSE,row.names=FALSE)
